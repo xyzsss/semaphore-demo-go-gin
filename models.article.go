@@ -1,6 +1,11 @@
 package main
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 type article struct {
 	ID      int    `json:"id"`
@@ -25,4 +30,23 @@ func getArticleByID(id int) (*article, error) {
 		}
 	}
 	return nil, errors.New("Article not found")
+}
+
+// Render one of HTML, JSON or CSV based on the 'Accept' header of the request
+// If the header doesn't specify this, HTML is rendered, provided that
+// the template name is present
+func render(c *gin.Context, data gin.H, templateName string) {
+
+	switch c.Request.Header.Get("Accept") {
+	case "application/json":
+		// Respond with JSON
+		c.JSON(http.StatusOK, data["payload"])
+	case "application/xml":
+		// Respond with XML
+		c.XML(http.StatusOK, data["payload"])
+	default:
+		// Respond with HTML
+		c.HTML(http.StatusOK, templateName, data)
+	}
+
 }
